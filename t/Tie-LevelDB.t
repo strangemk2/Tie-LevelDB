@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 26;
+use Test::More tests => 28;
 BEGIN { use_ok('Tie::LevelDB') };
 
 #########################
@@ -41,9 +41,9 @@ ok(not exists $h{k1});
 is($h{k1}, undef);
 $h{k1} = '';
 ok(exists $h{k1});
-#$h{k1} = undef;
-#ok(not exists $h{k1}); # limitation of LevelDB
-#is($h{k1}, undef);
+$h{k1} = undef;
+ok(not exists $h{k1}); # limitation of LevelDB
+is($h{k1}, undef);
 delete $h{k1};
 is($h{k1}, undef);
 ok(not exists $h{k1});

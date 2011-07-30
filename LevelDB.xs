@@ -67,11 +67,10 @@ public:
 		delete batch;
 	}
 	void Put(const char* key,const char * cvalue) {
-		if(!cvalue) Delete(key); // more usefull than setting to ''
-		else {
+		if(cvalue) {
 			std::string* value = new std::string(cvalue);
 			batch->Put(key, *value);
-		}
+		} else Delete(key); // LevelDB limitation..
 	}
 	void Delete(const char * key) {
 		batch->Delete(key);
@@ -98,9 +97,13 @@ public:
 	}
 	void Put(const char* key,const char* cvalue=NULL,
 			 HV* hv_write_options=NULL) {
-		std::string* value = new std::string(cvalue);
 		leveldb::WriteOptions write_options;
-		status_assert(db->Put(write_options, key, *value));
+		if(cvalue) {
+			std::string* value = new std::string(cvalue);
+			status_assert(db->Put(write_options, key, *value));
+		} else {
+			status_assert(db->Delete(leveldb::WriteOptions(), key));
+		}
 	}
 	const char* Get(const char* key) {
 		std::string value;
@@ -144,9 +147,12 @@ public:
 		Delete(key);
 	}
 	void CLEAR() {
+    std::cerr << "CLEAR()" << std::endl;
+    WriteBatch batch;
 		Iterator* it = NewIterator();
-		for(it->SeekToFirst();it->Valid();it->Next()) Delete(it->key());
+		for(it->SeekToFirst();it->Valid();it->Next()) batch.Delete(it->key());
 		delete it;
+    Write(&batch);
 	}
 	bool EXISTS(const char* key) {
 		Iterator* find = NewIterator();
@@ -261,7 +267,10 @@ const char*
 LevelDB::FETCH(const char* key)
 
 void
-LevelDB::STORE(const char* key,const char* value)
+LevelDB::STORE(const char* key,SV* sv_value)
+	CODE:
+		const char* cvalue = SvOK(sv_value) ? SvPV_nolen(sv_value) : NULL;
+		THIS->STORE(key,cvalue);
 
 void
 LevelDB::DELETE(const char* key)

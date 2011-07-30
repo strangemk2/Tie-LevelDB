@@ -20,7 +20,7 @@ WriteMakefile(
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Tie/LevelDB.pm', # retrieve abstract from module
        AUTHOR         => 'martin <martin@>') : ()),
-    LIBS              => [''], # e.g., '-lm'
+    LIBS              => [$mk{SNAPPY} ? '-lsnappy':''],
     DEFINE            => ($mk{SNAPPY} ? '-DSNAPPY':'').
 							" ".$mk{PLATFORM_CFLAGS}." ".$mk{PORT_CFLAGS}
 							.' -o $@',

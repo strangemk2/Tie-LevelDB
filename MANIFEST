@@ -65,10 +65,8 @@ table/iterator.cc
 table/table_builder.cc
 table/merger.cc
 table/two_level_iterator.cc
-port
 port/port.h
 port/port_posix.cc
-port/win
 port/win/stdint.h
 port/port_posix.h
 port/sha1_portable.h

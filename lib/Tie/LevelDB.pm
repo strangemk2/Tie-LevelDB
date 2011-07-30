@@ -25,7 +25,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 require XSLoader;
 XSLoader::load('Tie::LevelDB', $VERSION);
@@ -82,11 +82,15 @@ None by default.
 =head2 LIMITATIONS
 
 LevelDB does not support storing of C<undef> values. 
-Do not store C<undef>, C<delete> the key instead.
+If C<undef> is stored, the key is C<deleted> instead.
+
+Only text keys and values (i.e., without '\0' character) are supported.
 
 Perl support for Options specification is not covered.
 
-Also, SNAPPY compression method is not included in this version.
+To use SNAPPY compression method, install it from 
+L<http://code.google.com/p/snappy> first and then (re-)compile 
+this module.
 
 LevelDB sources (version 2011-07-29) are bundled with this packages. 
 
