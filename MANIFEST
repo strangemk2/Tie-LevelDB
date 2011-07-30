@@ -117,3 +117,4 @@ db/write_batch_test.cc
 db/corruption_test.cc
 db/version_edit.h
 db/db_iter.cc
+META.yml                                 Module meta-data (added by MakeMaker)

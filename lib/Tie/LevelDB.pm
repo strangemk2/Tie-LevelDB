@@ -25,7 +25,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 require XSLoader;
 XSLoader::load('Tie::LevelDB', $VERSION);
@@ -38,37 +38,61 @@ __END__
 
 =head1 NAME
 
-Tie::LevelDB - A Perl Interface to the LevelDB database
+Tie::LevelDB - A Perl Interface to the Google LevelDB NoSQL database
 
 =head1 SYNOPSIS
 
   use Tie::LevelDB;
 
-  my $db = new Tie::LevelDB("/tmp/testdb");
+  tie my %hash, 'Tie::LevelDB', "/tmp/testdb";
+  # Use the %hash array
+  untie %hash;
 
+  -- OR --
+
+  use Tie::LevelDB; 
+
+  my $db = new Tie::LevelDB::DB("/tmp/testdb");
   $db->Put("Google","Don't be evil!");
-
   print $db->Get("Google")."\n";
-
   $db->Delete("Google");
+
+  my $batch = new Tie::LevelDB::WriteBatch;
+  $batch->Delete("Google");
+  $batch->Put("Microsoft","Where Do you Want to Go Today?");
+  $db->Write($batch);
+
+  my $it = $db->NewIterator;
+  for($it->SeekToFirst;$it->Valid;$it->Next) {
+     print $it->key.": ".$it->value."\n";
+  }
 
 =head1 DESCRIPTION
 
 B<Tie::LevelDB> is the Perl Interface for Google NoSQL database called
 I<LevelDB>. See L<http://code.google.com/p/leveldb/> for more details.
 
-This version of module covers only a limited functionality of the LevelDB. 
-Only Open, Get, Put and Delete function calls are supported.
-
-Also, SNAPPY compression method is not included. Sorry.
+Interface is implemented both as a reflection of an original LevelDB 
+C++ API and a Perl-ish TIEHASH mechanism.
 
 =head2 EXPORT
 
 None by default.
 
+=head2 LIMITATIONS
+
+LevelDB does not support storing of C<undef> values. 
+Do not store C<undef>, C<delete> the key instead.
+
+Perl support for Options specification is not covered.
+
+Also, SNAPPY compression method is not included in this version.
+
+LevelDB sources (version 2011-07-29) are bundled with this packages. 
+
 =head1 SEE ALSO
 
-L<http://code.google.com/p/leveldb/>
+L<http://code.google.com/p/leveldb/>, L<DB_File(3)>, L<tie>.
 
 =head1 AUTHOR
 
