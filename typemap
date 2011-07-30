@@ -1,0 +1,2 @@
+TYPEMAP
+LevelDB *                    O_OBJECT
