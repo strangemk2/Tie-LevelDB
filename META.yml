@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Tie-LevelDB
-version:            0.03
+version:            0.04
 abstract:           A Perl Interface to the Google LevelDB NoSQL database
 author:
     - martin <martin@>

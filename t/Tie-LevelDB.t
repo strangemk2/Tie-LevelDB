@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 28;
+use Test::More tests => 29;
 BEGIN { use_ok('Tie::LevelDB') };
 
 #########################
@@ -48,9 +48,11 @@ delete $h{k1};
 is($h{k1}, undef);
 ok(not exists $h{k1});
 
-$h{k1} = '';
-ok(exists $h{k1});
-is($h{k1}, '');
+$h{"\0"} = "\0";
+ok(exists $h{"\0"});
+is($h{"\0"}, "\0");
+delete $h{"\0"};
+ok(not exists $h{"\0"});
 
 $h{k1} = "V1";
 is($h{k1}, "V1");
@@ -90,4 +92,6 @@ untie %h;
 is(scalar(keys %h), 0);
 
 system("rm -rf $DBDIR");
+
+system("rm -rf /tmp/stress-*");
 

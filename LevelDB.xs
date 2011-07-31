@@ -125,56 +125,87 @@ public:
 	}
 };
 
-class LevelDB : DB {
-	Iterator* it;
+SV* newSVstring(std::string str) {
+	return newSVpvn(str.data(),str.length());
+}
+SV* newSVslice(leveldb::Slice slice) {
+	return newSVpvn(slice.data(),slice.size());
+}
+std::string SV2string(SV* sv) {
+	STRLEN len;
+	char * ptr = SvPV(sv, len);
+	return std::string(ptr,len);
+}
+
+class LevelDB {
+	leveldb::DB* db;
+	leveldb::Iterator* it;
+	leveldb::Options options;
+	leveldb::WriteOptions write_options;
+	leveldb::ReadOptions read_options;
+	leveldb::WriteBatch batch;
+	
 public:
-	LevelDB() : it(NULL) {}
+	LevelDB() : db(NULL), it(NULL) {}
 	LevelDB(const char* name,HV* hv_options=NULL) {
 		db = NULL; it = NULL;
-		Open(name,hv_options);	
+		Open(name,hv_options);
+	}
+	void Open(const char* name,HV* hv_options=NULL) {
+		options.create_if_missing = true;
+		status_assert(leveldb::DB::Open(options,name,&db));
 	}
 	~LevelDB() { 
-		if(it) { delete it; it = NULL; }
-		if(db) { delete db; db = NULL; }
+		if(it) delete it;
+		if(db) delete db;
 	}
-	const char* FETCH(const char* key) {
-		return Get(key);
+	SV* FETCH(SV* sv_key) {
+		std::string key = SV2string(sv_key);
+		std::string value;
+		leveldb::Status s = db->Get(read_options,key,&value);
+		if(s.IsNotFound()) return newSV(0);
+		status_assert(s);
+		return newSVstring(value);
 	}
-	void STORE(const char* key,const char* value=NULL) {
-		Put(key,value);
+	void STORE(SV* sv_key,SV* sv_value) {
+		std::string key = SV2string(sv_key);
+		std::string value = SV2string(sv_value);
+		status_assert(db->Put(write_options,key,value));
 	}
-	void DELETE(const char* key) {
-		Delete(key);
+	void DELETE(SV* sv_key) {
+		std::string key = SV2string(sv_key);
+		status_assert(db->Delete(write_options,key));
 	}
 	void CLEAR() {
-    std::cerr << "CLEAR()" << std::endl;
-    WriteBatch batch;
-		Iterator* it = NewIterator();
-		for(it->SeekToFirst();it->Valid();it->Next()) batch.Delete(it->key());
+		leveldb::WriteBatch batch;
+		leveldb::Iterator* it = db->NewIterator(read_options);
+		for(it->SeekToFirst();it->Valid();it->Next()) 
+			batch.Delete(it->key().ToString().c_str()); // TODO: c_str()??
 		delete it;
-    Write(&batch);
+		status_assert(db->Write(write_options,&batch));
 	}
-	bool EXISTS(const char* key) {
-		Iterator* find = NewIterator();
+	bool EXISTS(SV* sv_key) {
+		std::string key = SV2string(sv_key);
+		leveldb::Iterator* find = db->NewIterator(read_options);
 		find->Seek(key);
 		bool valid = find->Valid();
 		delete(find);
 		return valid;
 	}
-	const char* FIRSTKEY() {
+	SV* FIRSTKEY() {
 		if(it) delete it;
-		it = NewIterator();
+		it = db->NewIterator(read_options);
 		it->SeekToFirst();
-		return it->Valid() ? it->key() : NULL;
+		return it->Valid() ? newSVslice(it->key()) : newSV(0);
 	}
-	const char* NEXTKEY(const char* lastkey) {
+	SV* NEXTKEY(SV* sv_lastkey) {
 		if(!it) return NULL;
 		it->Next();
-		return it->Valid() ? it->key() : NULL;
+		return it->Valid() ? newSVslice(it->key()) : newSV(0);
 	}
 	int SCALAR() {
 		int count = 0;
-		Iterator* it = NewIterator();
+		leveldb::Iterator* it = db->NewIterator(read_options);
 		for(it->SeekToFirst();it->Valid();it->Next()) count++;
 		delete it;
 		return count;
@@ -263,29 +294,29 @@ MODULE = Tie::LevelDB		PACKAGE = Tie::LevelDB
 LevelDB*
 LevelDB::new()
 
-const char*
-LevelDB::FETCH(const char* key)
+SV* 
+LevelDB::FETCH(SV* key)
 
 void
-LevelDB::STORE(const char* key,SV* sv_value)
+LevelDB::STORE(SV* sv_key,...)
 	CODE:
-		const char* cvalue = SvOK(sv_value) ? SvPV_nolen(sv_value) : NULL;
-		THIS->STORE(key,cvalue);
+		if(SvOK(ST(2))) THIS->STORE(sv_key,ST(2));
+				   else THIS->DELETE(sv_key);
 
 void
-LevelDB::DELETE(const char* key)
+LevelDB::DELETE(SV* sv_key)
 
 void
 LevelDB::CLEAR()
 
 bool
-LevelDB::EXISTS(const char* key)
+LevelDB::EXISTS(SV* sv_key)
 
-const char*
+SV*
 LevelDB::FIRSTKEY()
 
-const char*
-LevelDB::NEXTKEY(const char* lastkey)
+SV*
+LevelDB::NEXTKEY(SV* sv_lastkey)
 
 int
 LevelDB::SCALAR()

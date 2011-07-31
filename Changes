@@ -14,3 +14,7 @@ Revision history for Perl extension Tie::LevelDB.
     - Warning about missing "port/" and "port/win/" suppressed
     - Storing undef values deletes the key automatically
 
+0.04  Sat Jul 31 07:21:19 2011
+    - Rewritted to support binary keys and values
+    - Module passes stress-testing
+
