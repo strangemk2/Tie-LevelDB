@@ -8,6 +8,8 @@ extern "C" {
 #include "ppport.h"
 
 //#include <Tie::LevelDB>
+#undef do_open
+#undef do_close
 
 #ifdef __cplusplus
 }

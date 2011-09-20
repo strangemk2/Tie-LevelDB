@@ -18,3 +18,6 @@ Revision history for Perl extension Tie::LevelDB.
     - Rewritted to support binary keys and values
     - Module passes stress-testing
 
+0.05  Mon Sep 18 14:33:19 2011
+    - Mac OS X Snow Leopard support thanks to Svetoslav Agafonkin
+
