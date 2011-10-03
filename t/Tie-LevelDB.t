@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 29;
+use Test::More tests => 30;
 BEGIN { use_ok('Tie::LevelDB') };
 
 #########################
@@ -86,6 +86,15 @@ delete $h{'goner1'};
 delete $h{'goner2'};
 
 is(scalar(keys %h), 2);
+
+open my $fh, "|-", $^X, "-Mblib" or die $!;
+print $fh <<EOF;
+use $LevelDB_Class;
+eval { tie my %h, "$LevelDB_Class", "$DBDIR" };
+die if \$@ !~ /LOCK/;
+EOF
+close $fh;
+ok +($? >> 8) == 0, "Unable to open locked DB";
 
 untie %h;
 

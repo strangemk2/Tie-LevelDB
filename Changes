@@ -21,3 +21,7 @@ Revision history for Perl extension Tie::LevelDB.
 0.05  Mon Sep 18 14:33:19 2011
     - Mac OS X Snow Leopard support thanks to Svetoslav Agafonkin
 
+0.06  Mon Oct 01 10:33:19 2011
+    - Avoids segfaulting on attempting to open a locked DB, 
+	- thanks to David Leadbeater
+

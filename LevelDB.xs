@@ -22,7 +22,20 @@ extern "C" {
 #include<leveldb/write_batch.h>
 
 void status_assert(leveldb::Status s) {
-	if(!s.ok()) std::cerr << s.ToString() << std::endl;
+	if(!s.ok()) croak("%s",s.ToString().c_str());
+}
+
+
+SV* newSVstring(std::string str) {
+	return newSVpvn(str.data(),str.length());
+}
+SV* newSVslice(leveldb::Slice slice) {
+	return newSVpvn(slice.data(),slice.size());
+}
+std::string SV2string(SV* sv) {
+	STRLEN len;
+	char * ptr = SvPV(sv, len);
+	return std::string(ptr,len);
 }
 
 class Iterator {
@@ -36,23 +49,21 @@ public:
 	~Iterator() { delete it; it = NULL; }
 	void SeekToFirst() { it->SeekToFirst(); }
 	void SeekToLast()  { it->SeekToLast(); }
-	void Seek(const char* c_target) { // fix: allow \0 in target
-		leveldb::Slice* target = 
-			new leveldb::Slice(c_target,strlen(c_target));
-		it->Seek(*target);
+	void Seek(const SV* sv_target) {
+		leveldb::Slice target(SvPVX(sv_target), SvCUR(sv_target));
+		it->Seek(target);
 	}
 	void Next()  { it->Next(); }
 	void Prev()  { it->Prev(); }
 	bool Valid() { return it->Valid(); }
-	const char* key() { 
+	SV* key() {
 		const char* k = it->key().ToString().c_str();
 		status_assert(it->status());
-		return k;
+		return newSVslice(it->key());
 	}
-	const char* value() { 
-		const char* v = it->value().ToString().c_str();
+	SV* value() {
 		status_assert(it->status());
-		return v;
+		return newSVslice(it->value());
 	}
 };
 
@@ -126,18 +137,6 @@ public:
 		return new Iterator(db->NewIterator(read_options));
 	}
 };
-
-SV* newSVstring(std::string str) {
-	return newSVpvn(str.data(),str.length());
-}
-SV* newSVslice(leveldb::Slice slice) {
-	return newSVpvn(slice.data(),slice.size());
-}
-std::string SV2string(SV* sv) {
-	STRLEN len;
-	char * ptr = SvPV(sv, len);
-	return std::string(ptr,len);
-}
 
 class LevelDB {
 	leveldb::DB* db;
@@ -268,7 +267,7 @@ void
 Iterator::DESTROY()
 
 void
-Iterator::Seek(char* c_target)
+Iterator::Seek(SV* sv_target)
 
 void
 Iterator::SeekToFirst()
@@ -285,10 +284,10 @@ Iterator::Next()
 bool
 Iterator::Valid()
 
-const char*
+SV*
 Iterator::key()
 
-const char*
+SV*
 Iterator::value()
 
 MODULE = Tie::LevelDB		PACKAGE = Tie::LevelDB
