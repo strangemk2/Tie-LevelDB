@@ -23,5 +23,8 @@ Revision history for Perl extension Tie::LevelDB.
 
 0.06  Mon Oct 01 10:33:19 2011
     - Avoids segfaulting on attempting to open a locked DB, 
-	- thanks to David Leadbeater
+    - thanks to David Leadbeater
+
+0.07  Mon Nov 14 02:33:19 2011
+    - MS Windows support thanks to Julian Lishev <julian.lishev@imperia.net>
 

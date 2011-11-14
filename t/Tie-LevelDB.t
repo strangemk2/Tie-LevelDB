@@ -14,7 +14,7 @@ my $DBDIR = "/tmp/leveldb-test";
 my $LevelDB_Class = "Tie::LevelDB";
 
 # 1. Test LevelDB API
-
+{
 system("rm -rf $DBDIR");
 my $db = Tie::LevelDB::DB->new($DBDIR);
 is(ref $db,"Tie::LevelDB::DB");
@@ -25,7 +25,7 @@ $db->Put("k1","v1");
 is($db->Get("k1"),"v1");
 $db->Delete("k1");
 is($db->Get("k1"),undef);
-
+}
 
 # 2. Test TIEHASH API
 

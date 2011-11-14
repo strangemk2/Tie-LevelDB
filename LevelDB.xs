@@ -1,3 +1,11 @@
+
+// Make sure C++ headers are included before PERL headers to avoid errors.
+#include<iostream>
+#include<leveldb/db.h>
+#include<leveldb/slice.h>
+#include<leveldb/iterator.h>
+#include<leveldb/write_batch.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8,34 +16,27 @@ extern "C" {
 #include "ppport.h"
 
 //#include <Tie::LevelDB>
-#undef do_open
-#undef do_close
 
 #ifdef __cplusplus
 }
 #endif
 
-#include<iostream>
-#include<leveldb/db.h>
-#include<leveldb/slice.h>
-#include<leveldb/iterator.h>
-#include<leveldb/write_batch.h>
+// winnt.h already defines DELETE which overlaps our DELETE method.
+#undef DELETE
 
 void status_assert(leveldb::Status s) {
 	if(!s.ok()) croak("%s",s.ToString().c_str());
 }
-
-
 SV* newSVstring(std::string str) {
-	return newSVpvn(str.data(),str.length());
+    return newSVpvn(str.data(),str.length());
 }
 SV* newSVslice(leveldb::Slice slice) {
-	return newSVpvn(slice.data(),slice.size());
+    return newSVpvn(slice.data(),slice.size());
 }
 std::string SV2string(SV* sv) {
-	STRLEN len;
-	char * ptr = SvPV(sv, len);
-	return std::string(ptr,len);
+    STRLEN len;
+    char * ptr = SvPV(sv, len);
+    return std::string(ptr,len);
 }
 
 class Iterator {
@@ -56,14 +57,15 @@ public:
 	void Next()  { it->Next(); }
 	void Prev()  { it->Prev(); }
 	bool Valid() { return it->Valid(); }
-	SV* key() {
-		const char* k = it->key().ToString().c_str();
+	SV* key() { 
+		SV* k = newSVstring(it->key().ToString());
 		status_assert(it->status());
-		return newSVslice(it->key());
+		return k;
 	}
-	SV* value() {
+	SV* value() { 
+		SV* v = newSVstring(it->value().ToString());
 		status_assert(it->status());
-		return newSVslice(it->value());
+		return v;
 	}
 };
 
@@ -118,12 +120,12 @@ public:
 			status_assert(db->Delete(leveldb::WriteOptions(), key));
 		}
 	}
-	const char* Get(const char* key) {
+	SV* Get(const char* key) {
 		std::string value;
 		leveldb::Status s = db->Get(leveldb::ReadOptions(), key, &value);
 		if(s.IsNotFound()) return NULL;
 		status_assert(s);
-		return value.c_str();
+		return newSVstring(value);
 	}
 	void Delete(const char* key) {
 		status_assert(db->Delete(leveldb::WriteOptions(), key));
@@ -227,7 +229,7 @@ DB::DESTROY()
 void
 DB::Put(char* key,char* value=NULL)
 
-const char* 
+SV* 
 DB::Get(const char * key)
 
 void
