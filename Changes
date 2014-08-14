@@ -28,3 +28,6 @@ Revision history for Perl extension Tie::LevelDB.
 0.07  Mon Nov 14 02:33:19 2011
     - MS Windows support thanks to Julian Lishev <julian.lishev@imperia.net>
 
+0.08 Thu Aug 14 04:49:19 2014
+    - x86 support
+

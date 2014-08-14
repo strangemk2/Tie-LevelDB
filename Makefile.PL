@@ -65,8 +65,8 @@ END
 		#OBJECT            => '$(O_FILES)', # link all the C files too
 		OBJECT            => $OBJECT,
 
-		'CC'			    => 'g++ '.$mk{PLATFORM_CFLAGS}." ".$mk{PORT_CFLAGS},
-		'LD'			    => 'g++ '.$mk{PLATFORM_LDFLAGS},
+		'CC'			    => 'c++ '.$mk{PLATFORM_CFLAGS}." ".$mk{PORT_CFLAGS},
+		'LD'			    => 'c++ '.$mk{PLATFORM_LDFLAGS},
 		'XSOPT'             => '-C++',
 		'TYPEMAPS'          => ['perlobject.map' ],
 	);
