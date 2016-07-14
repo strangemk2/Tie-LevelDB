@@ -16,12 +16,14 @@ To install this module type the following:
 
 DEPENDENCIES
 
-Module has no dependencies. LevelDB sources are bundled with this package.
+leveldb installation
+snappy (optional)
 
 
 COPYRIGHT AND LICENCE
 
 Copyright (C) 2011 by Sokordia, s.r.o. http://www.sokordia.cz
+Copyright (C) 2016 by Xi
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
