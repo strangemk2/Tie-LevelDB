@@ -123,7 +123,7 @@ public:
 	SV* Get(const char* key) {
 		std::string value;
 		leveldb::Status s = db->Get(leveldb::ReadOptions(), key, &value);
-		if(s.IsNotFound()) return NULL;
+		if(s.IsNotFound()) return newSV(0);
 		status_assert(s);
 		return newSVstring(value);
 	}
